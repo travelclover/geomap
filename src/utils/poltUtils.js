@@ -21,6 +21,12 @@ import GeometrySymbolEditor from '../components/layerList/GeometrySymbolEditor';
 import * as mapUtils from './arcgis/map/LayerUtil';
 
 class poltUtils {
+
+  /**
+  * 
+  * @param {} [] (!)
+  * @return {} 
+  */
   static async poltByType({ type, symbolparam }, callback, showeditbar) {
     if (!type) return
     const view = env.getParamAgs().view;
@@ -122,6 +128,7 @@ class poltUtils {
         width: poltUtils.symbolparam.polygonparam.bordersize || 1,
       },
     };
+
     /**创建sketch绘图对象 */
     if (!this.sketchViewModel) {
       this.sketchViewModel = new SketchViewModel({
@@ -171,6 +178,7 @@ class poltUtils {
       if (event.state === 'active') {
       }
     });
+    
     /**sketch更新状态 */
     this.sketchUpdatehandle = this.sketchViewModel.on('update', event => {
 
@@ -241,6 +249,7 @@ class poltUtils {
       return;
     }
   }
+
   static async getSketchModal() {
     const view = env.getParamAgs().view;
     const [GraphicsLayer, SketchViewModel] = await jsapi.load([
@@ -272,6 +281,7 @@ class poltUtils {
     poltlayer.remove(poltlayer.graphics.items[poltlayer.graphics.items.length - 1]);
     // this.sketchViewModel.undo();
   }
+  
   //清除标绘
   static editClear() {
     const poltlayerid = window.poltlayerid ? window.poltlayerid : 'poltlayer';
@@ -289,6 +299,7 @@ class poltUtils {
       if (gs) this.editSketch.update([gs.items[0]]);
     }
   }
+
   //删除编辑
   static editDelete() {
     if (!this.editSketch) {

@@ -17,7 +17,7 @@ import request from '../utils/request';
 import { message } from 'antd';
 
 export default {
-  namespace: 'layerList',
+  namespace: 'splitLayerList',
 
   state: {
     /**layerlist */
@@ -26,7 +26,6 @@ export default {
     webMapsList: [],
     currentLayers: [],
     layerPanelFlag: 'layerlist',
-    isSplit:false, //pensiveant:是否为分屏，用于分屏后图层列表位置调整
 
     /**subjectlayerlist */
     subjectLayerListShow: false,
@@ -38,7 +37,7 @@ export default {
     trees: [],
     collectionWebMaps: [],
     initCheckTreeNodes: [],
-    checkedTreeNodes: [],
+    checkedTreeNodes: [], //
     poltlayerlist: { results: [], total: 0 },
     poltedittoolbarvisible:true,
     webmapTopload:false,
@@ -60,6 +59,7 @@ export default {
       const { keyword, bound } = payload;
       const result = yield call(showLayerList, keyword, bound);
     },
+    
     *getAllSystemLayers({ payload }, { put, call }) {
       const q = `owner:${
         sessionStorage.username
@@ -254,8 +254,6 @@ export default {
     setLayerPanelFlag(state, action) {
       return { ...state, layerPanelFlag: action.payload };
     },
-
-    //pensiveant:更改标绘功能中编辑组件的可见性
     changePoltPanelVisible(state, action) {
       return { ...state, poltPanelVisible: action.payload };
     },
@@ -281,9 +279,12 @@ export default {
     setInitCheckedTreeNode(state, action) {
       return { ...state, initCheckTreeNodes: action.payload };
     },
+
+    /*图层checkbox选中*/
     setCheckedTreeNode(state, action) {
       return { ...state, checkedTreeNodes: action.payload };
     },
+    
     setPoltlayerList(state, action) {
       return { ...state, poltlayerlist: action.payload };
     },
@@ -295,10 +296,6 @@ export default {
     },
     changePoltlayerOptionsLoad(state,action){
       return {...state,poltlayeroptionsload:action.payload};
-    },
-    //pensiveant:修改分屏状态
-    changeSplitState(state,action){
-      return {...state,isSplit:action.payload};
     }
   },
 };

@@ -1,18 +1,33 @@
-//pensiveant:LayerList的子组件
-
 import React from 'react';
 import { connect } from 'dva';
 import moment from 'moment';
-import { Tree, Button, message, Row, Col, Input, Tooltip, DatePicker } from 'antd';
-import styles from './SystemLayer.less';
-//import { FormattedMessage, setLocale, getLocale, formatMessage } from 'umi/locale';
+import {
+  Tree,
+  Button,
+  message,
+  Row,
+  Col,
+  Icon,
+  Checkbox,
+  Divider,
+  Input,
+  Form,
+  Tooltip,
+  Dropdown,
+  Menu,
+  Switch,
+  DatePicker,
+} from 'antd';
+import styles from './SystemSplitLayer.less';
+// import { FormattedMessage, setLocale, getLocale, formatMessage } from 'umi/locale';
 
 import {
+  LAYERLIST_GET_TREE,
   LAYERLIST_ADD_LAYERS,
   LAYERLIST_REMOVE_LAYERS,
-  SUBJECTLAYERLIST_SAVE,
-  LAYERLIST_CHANGE_INDEX,
-  LAYERLIST_RELOAD_WEATHER_LAYERS,
+ SUBJECTSPLITLAYERLIST_SAVE,
+  SPLITLAYERLIST_CHANGE_INDEX,
+ SPLITLAYERLIST_RELOAD_WEATHER_LAYERS,
 } from '../../constants/action-types';
 import common from '../../utils/common';
 import treeUtil from '../../utils/layertreeutils';
@@ -20,8 +35,7 @@ import treeUtil from '../../utils/layertreeutils';
 const { TreeNode } = Tree;
 const Search = Input.Search;
 const dataList = [];
-class SystemLayer extends React.Component {
-
+class SystemSplitLayer extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -38,11 +52,8 @@ class SystemLayer extends React.Component {
       datapickervisible: false,
     };
   }
-
   componentDidMount = () => {};
-
   onDragEnter = info => {};
-
   onDrop = info => {
     console.log(info);
     if (!info.node.props.checked) {
@@ -55,7 +66,7 @@ class SystemLayer extends React.Component {
     const dropPosition = info.dropPosition - Number(dropPos[dropPos.length - 1]);
 
     this.props.dispatch({
-      type: LAYERLIST_CHANGE_INDEX,
+      type: SPLITLAYERLIST_CHANGE_INDEX,
       payload: { dropKey, dragKey },
     });
 
@@ -113,9 +124,10 @@ class SystemLayer extends React.Component {
       gData: data,
     });
   };
-  
-  //图层列表树形结构check处理回调
+
+  //图层check事件
   treeNodeCheckHandle = (checkedKeys, { checked, checkedNodes, node, event }) => {
+    //设置勾选的树结构
     let checkedTreeNode = checkedKeys;
     const key = node.props.eventKey;
     if (checked) {
@@ -124,14 +136,13 @@ class SystemLayer extends React.Component {
       checkedTreeNode = common.deleteArrItem(checkedTreeNode, key);
     }
     this.props.dispatch({
-      type: 'layerList/setCheckedTreeNode',
+      type: 'splitLayerList/setCheckedTreeNode',
       payload: checkedTreeNode,
     });
-    //------------------------------
+    //设置图像的显示
     const obj = treeUtil.getTreeObjByKey(key);
     const trees = treeUtil.getAllChildrenNode(obj);
-    //const view = window.ags.view;
-    const view = window.agsGlobal.view;
+    const view = window.agstwoGlobal.view;
     if (checked) {
       //去重加载图层
       this.props.dispatch({
@@ -172,11 +183,11 @@ class SystemLayer extends React.Component {
       snippet: this.state.snippet,
     };
     this.props.dispatch({
-      type: SUBJECTLAYERLIST_SAVE,
+      type:SUBJECTSPLITLAYERLIST_SAVE,
       payload: subjectInfo,
-    });
+    });   
     this.props.dispatch({
-      type: 'layerList/changeWebmapTopload',
+      type:'splitLayerList/changeWebmapTopload',
       payload: true,
     });
   };
@@ -269,7 +280,7 @@ class SystemLayer extends React.Component {
         checkAll: true,
       });
       this.props.dispatch({
-        type: 'layerList/setCheckedTreeNode',
+        type: 'splitLayerList/setCheckedTreeNode',
         payload: allkeys,
       });
       this.props.dispatch({
@@ -281,7 +292,7 @@ class SystemLayer extends React.Component {
         checkAll: false,
       });
       this.props.dispatch({
-        type: 'layerList/setCheckedTreeNode',
+        type: 'splitLayerList/setCheckedTreeNode',
         payload: [],
       });
       this.props.dispatch({
@@ -307,9 +318,9 @@ class SystemLayer extends React.Component {
 
   /*重置*/
   resetTree = () => {
-    const initTreeNodes = this.props.layerList.initCheckTreeNodes;
+    const initTreeNodes = this.props.splitLayerList.initCheckTreeNodes;
     this.props.dispatch({
-      type: 'layerList/setCheckedTreeNode',
+      type: 'splitLayerList/setCheckedTreeNode',
       payload: initTreeNodes,
     });
     const allTrees = treeUtil.getAllTreeNodes();
@@ -325,6 +336,8 @@ class SystemLayer extends React.Component {
       payload: initTrees.filter(Boolean),
     });
   };
+
+  // 构造图层树结构
   getTree = () => {
     // 此树结构读取配置文件
     const loop = data =>
@@ -358,7 +371,7 @@ class SystemLayer extends React.Component {
         className="draggable-tree"
         draggable
         blockNode
-        checkedKeys={this.props.layerList.checkedTreeNodes}
+        checkedKeys={this.props.splitLayerList.checkedTreeNodes}
         //onDragEnter={this.onDragEnter}
         onDrop={this.onDrop}
         onCheck={this.treeNodeCheckHandle}
@@ -380,7 +393,6 @@ class SystemLayer extends React.Component {
       datapickervisible: false,
     });
   };
-
   getTreeTitle = (key, title) => {
     const index = title.indexOf(this.state.searchValue);
     const beforeStr = title.substr(0, index);
@@ -425,27 +437,20 @@ class SystemLayer extends React.Component {
       return <span>{titl}</span>;
     }
   };
-
   weatherDateChange = (date, dateString, treeTitle) => {
     const dstr = date.format('YYYY/M/D');
     this.props.dispatch({
-      type: LAYERLIST_RELOAD_WEATHER_LAYERS,
+      type:SPLITLAYERLIST_RELOAD_WEATHER_LAYERS,
       payload: dstr,
     });
   };
-
-  //清除图层回调
-  clearLayer=()=>{
-
-  }
-
   render() {
     return (
       <div className={styles.wrap}>
         <Row className={styles.toolbar}>
           <Col span={13}>
             <Search
-              placeholder='关键字、图层名称'
+            placeholder='关键字、图层名称'
               onChange={this.searchTextChange}
             />
           </Col>
@@ -455,8 +460,8 @@ class SystemLayer extends React.Component {
                 <Tooltip
                   title={
                     this.state.checkAll
-                      ? '全不选'
-                      : '全选'
+                    ? '全不选'
+                    : '全选'
                   }
                 >
                   <Button
@@ -468,7 +473,7 @@ class SystemLayer extends React.Component {
                 </Tooltip>
               </li>
               <li>
-                <Tooltip title='展开所有图层'>
+              <Tooltip title='展开所有图层'>
                   <Button
                     key="menu-fold"
                     className={styles.noeffect}
@@ -478,7 +483,7 @@ class SystemLayer extends React.Component {
                 </Tooltip>
               </li>
               <li>
-                <Tooltip title='折叠所有图层'>
+              <Tooltip title='折叠所有图层'>
                   <Button
                     key="menu-unfold"
                     className={styles.noeffect}
@@ -487,16 +492,16 @@ class SystemLayer extends React.Component {
                   />
                 </Tooltip>
               </li>
-              <li>
-                <Tooltip title='清除图层'>
+              {/*<li>
+                <Tooltip title={formatMessage({ id: 'systemlayer.reset' })}>
                   <Button
                     key="undo"
                     className={styles.noeffect}
                     icon="undo"
-                    onClick={this.clearLayer}
+                    onClick={this.resetTree}
                   />
                 </Tooltip>
-              </li>
+              </li>*/}
               {/* <li>
                 <Tooltip title={formatMessage({id:"systemlayer.save"})}>     
                   <Button key="save" className={styles.noeffect} icon="save" onClick={this.saveTree}></Button>
@@ -551,7 +556,7 @@ class SystemLayer extends React.Component {
     );
   }
 }
-SystemLayer.propTypes = {};
-export default connect(({ layerList }) => {
-  return { layerList };
-})(SystemLayer);
+SystemSplitLayer.propTypes = {};
+export default connect(({ splitLayerList }) => {
+  return { splitLayerList };
+})(SystemSplitLayer);

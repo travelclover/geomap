@@ -1,15 +1,10 @@
-//pensiveant:图层列表组件
-
 import React, { Component } from 'react';
 import { connect } from 'dva';
 import { Collapse, Button, Icon, message, Tooltip, Modal, Input } from 'antd';
-import styles from './LayerList.less';
-
-//引入子组件
 import CollectionLayer from './CollectionLayer';
-import SystemLayer from './SystemLayer';
-
-//import { FormattedMessage, setLocale, getLocale, formatMessage } from 'umi/locale';
+import SystemSplitLayer from './SystemSplitLayer';
+import styles from './SplitLayerList.less';
+// import { FormattedMessage, setLocale, getLocale, formatMessage } from 'umi/locale';
 
 import {
   VIEW_MODE_2D,
@@ -25,8 +20,7 @@ import {
 } from '../../services/portal';
 
 const { Panel } = Collapse;
-
-class LayerList extends Component {
+class SplitLayerList extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -48,7 +42,6 @@ class LayerList extends Component {
     /**暂时先放在这,应放在登陆验证后的操作 */
     // this.getPotrtalToken();
   }
-
   getPotrtalToken = () => {
     getPortalToken(window.username, window.password)
       .then(data => {
@@ -62,41 +55,37 @@ class LayerList extends Component {
         message.warn('获取用户失败···');
       });
   };
-
   getMyWebmap = () => {
     const q = `owner:${sessionStorage.username} orgid:0123456789ABCDEF AND type: 'Web Map'`;
     const items = searchItems(sessionStorage.token, q, 1, 100, null, null);
     items.then(data => {
       this.props.dispatch({
-        type: 'layerList/setWebMapsList',
+        type: 'splitLayerList/setWebMapsList',
         payload: data.data.results,
       });
       const webMapsListWidth = (data.data.results.length + 1) * 205;
       this.props.dispatch({
-        type: 'layerList/setWebMapsListWidth',
+        type: 'splitLayerList/setWebMapsListWidth',
         payload: webMapsListWidth,
       });
     });
   };
 
-  //图层列表关闭“X”回调
   changeLayerListVisible = e => {
     e.stopPropagation();
 
     this.props.dispatch({
-      type: 'layerList/changeLayerListVisible',
-      payload: !this.props.layerList.layerListVisible,
+      type: 'splitLayerList/changeLayerListVisible',
+      payload: !this.props.splitLayerList.layerListVisible,
     });
   };
-
   showThematicPanel = () => {
     // this.getMyWebmap();
     this.props.dispatch({
-      type: 'layerList/showSubjectLayerList',
-      payload: !this.props.layerList.subjectLayerListShow,
+      type: 'splitLayerList/showSubjectLayerList',
+      payload: !this.props.splitLayerList.subjectLayerListShow,
     });
   };
-
   //onMouseDown
   drag = e => {
     const Drag = this.refs.layerListPanel;
@@ -111,14 +100,12 @@ class LayerList extends Component {
       Drag.style.cursor = 'move';
     };
   };
-
   //onMouseUp
   removeDrag = e => {
     document.onmousemove = null;
     const Drag = this.refs.layerListPanel;
     Drag.style.cursor = 'default';
   };
-
   saveToCollection = () => {
     const subjectInfo = {
       title: this.state.title,
@@ -129,10 +116,9 @@ class LayerList extends Component {
       payload: subjectInfo,
     });
     this.props.dispatch({
-      type: 'layerList/getCollectionWebMap',
+      type: 'splitLayerList/getCollectionWebMap',
     });
   };
-
   handleOk = e => {
     if (this.state.title === '') {
       message.warn('标题不能为空！');
@@ -146,7 +132,7 @@ class LayerList extends Component {
     });
     setTimeout(() => {
       this.props.dispatch({
-        type: 'layerList/getCollectionWebMap',
+        type: 'splitLayerList/getCollectionWebMap',
       });
     }, 1000);
   };
@@ -158,19 +144,16 @@ class LayerList extends Component {
       modalvisible: false,
     });
   };
-
   showSaveModal = e => {
     this.setState({
       modalvisible: true,
     });
   };
-
   titleChange = e => {
     this.setState({
       title: e.target.value,
     });
   };
-  
   snippetChange = e => {
     this.setState({
       snippet: e.target.value,
@@ -191,20 +174,19 @@ class LayerList extends Component {
       <div
         className={styles.leftPanel}
         style={{
-          display: this.props.agsmap.mode === VIEW_MODE_2D ? 'block' : 'none',          
+          display: this.props.agsmap.mode === VIEW_MODE_2D ? 'block' : 'none',
         }}
       >     
         <div
           className={styles.layerListPanel}
-          style={{ display: this.props.layerList.layerListVisible ? 'block' : 'none',
+          style={{ display: this.props.splitLayerList.layerListVisible ? 'block' : 'none',
             height: this.state.comheight,
-            left:this.props.layerList.isSplit?'30px':''
            }}
           ref="layerListPanel"
         >
           <div className={styles.title} onMouseDown={this.drag} onMouseUp={this.removeDrag}>
           图层列表
-            <Tooltip title='关闭'>
+          <Tooltip title='关闭'>
               <div onClick={this.changeLayerListVisible} className={styles.close}>
                 <Icon type="close" />
               </div>
@@ -215,12 +197,12 @@ class LayerList extends Component {
               style={{height: this.state.contentheight}}
           >
             <Collapse>
-              <Panel header='我的收藏' key="1" showArrow={false} extra={this.genExtra()}>
+            <Panel header='我的收藏' key="1" showArrow={false} extra={this.genExtra()}>
                 <CollectionLayer />
               </Panel>
             </Collapse>
             <h4 className={styles.header}> 图层列表</h4>
-            <SystemLayer />
+            <SystemSplitLayer />
           </div>
         </div>
         
@@ -228,12 +210,12 @@ class LayerList extends Component {
     );
   }
 }
-LayerList.propTypes= {
+SplitLayerList.propTypes= {
   
 }
-export default connect(({ agsmap, layerList }) => {
+export default connect(({ agsmap, splitLayerList }) => {
   return {
     agsmap,
-    layerList,
+    splitLayerList,
   };
-})(LayerList);
+})(SplitLayerList);
