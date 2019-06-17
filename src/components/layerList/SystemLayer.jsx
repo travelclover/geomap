@@ -13,9 +13,12 @@ import {
   SUBJECTLAYERLIST_SAVE,
   LAYERLIST_CHANGE_INDEX,
   LAYERLIST_RELOAD_WEATHER_LAYERS,
+  ACTION_DRAW_CLEAR_2D,
 } from '../../constants/action-types';
 import common from '../../utils/common';
 import treeUtil from '../../utils/layertreeutils';
+import * as SearchConsts from '../../constants/search';
+
 
 const { TreeNode } = Tree;
 const Search = Input.Search;
@@ -436,7 +439,12 @@ class SystemLayer extends React.Component {
 
   //清除图层回调
   clearLayer=()=>{
-
+    //清除所有图层
+    this.props.dispatch({
+      type: 'layerList/setCheckedTreeNode',
+      payload: [],
+    });
+    window.agsGlobal.view.map.removeAll();
   }
 
   render() {
@@ -492,7 +500,7 @@ class SystemLayer extends React.Component {
                   <Button
                     key="undo"
                     className={styles.noeffect}
-                    icon="undo"
+                    icon="delete"
                     onClick={this.clearLayer}
                   />
                 </Tooltip>

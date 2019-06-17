@@ -3,7 +3,6 @@ import { connect } from 'dva';
 import { Button } from 'antd';
 import panMapIcon from './images/移动.png';
 import searchIcon from './images/手指.png';
-import personViewIcon from './images/人视角.png';
 import surroundRoamIcon from './images/旋转.png';
 import yuYanIcon from './images/鱼眼.png';
 import measurement3DIcon from './images/量高.png';
@@ -50,6 +49,12 @@ class Toolbar3D extends React.Component {
       type: ACTION_MEASURE_LINE_3D,
     });
   }
+
+  /**
+   * 面积测量回调
+   * author:pensiveant
+   * @param {*} e 
+   */
   measure3DArea(e) {
     e.stopPropagation();
     this.props.dispatch({
@@ -88,6 +93,11 @@ class Toolbar3D extends React.Component {
       payload: this.state.visibleovermap,
     });
   }
+
+  /**
+   * 日照分析回调
+   * author:pensiveant
+   */
   sunShine() {
     if (!this.props.agsmap.lightshadowlistflags) {
       this.props.dispatch({
@@ -111,11 +121,17 @@ class Toolbar3D extends React.Component {
       });
     }
   }
+
+  /**
+   * 导出底图
+   * author:pensiveant
+   */
   windowPrint() {
     this.props.dispatch({
       type: ACTION_MAP_PRINT_3D,
     });
   }
+  
   render() {
     return (
       <div

@@ -1,10 +1,103 @@
+/**
+ * geomap-uilts备用通用库
+ * @author  lee  
+ */
 import * as jsapi from '../../jsapi';
+//---------------------------------场景初始化 start----------------------------------------
+/**
+ * 初始化二维场景
+ * @author  lee  
+ * @param {object} portal  portal地址
+ * @param {string} itemid  webmapId
+ * @param {string} container  地图的div
+ * @returns {object}  view 场景
+ */
+async function initMapView(portal, itemid, container) {
+  const [WebMap, MapView] = await jsapi.load(['esri/WebMap', 'esri/views/MapView']);
+  const webmap = new WebMap({
+    portalItem: {
+      id: itemid,
+      portal: portal,
+    },
+  });
+  const view = new MapView({
+    container: container,
+    map: webmap,
+    ui: {
+      components: [],
+    },
+  });
+  return view;
+}
+export { initMapView }
+/**
+ * 初始化三维场景
+ * @author  lee  
+ * @param {object} portal  portal地址
+ * @param {string} itemid  webscenenId
+ * @param {string} container  地图的div
+ * @returns {object}  view 场景
+ */
+
+async function initSceneView(portal, itemid, container) {
+  const [WebScene, Sceneview] = await jsapi.load(['esri/WebScene', 'esri/views/SceneView']);
+  const scene = new WebScene({
+    portalItem: {
+      id: itemid,
+      portal: portal,
+    },
+  });
+
+  const view = new Sceneview({
+    container: container,
+    map: scene,
+    environment: {
+      atmosphere: {
+        quality: 'high',
+      },
+      // 修改光照
+      lighting: {
+        date: new Date(),
+        directShadowsEnabled: false,
+        cameraTrackingEnabled: false,
+      },
+    },
+    ui: {
+      components: [], 
+    },
+  });
+  return view;
+}
+export { initSceneView };
+//---------------------------------场景初始化 end--------------------------------
+
+//---------------------------------底图切换 start------------------------------
+/**
+ * 通过webmapid 切换底图
+ * @author  lee  
+ * @param {object} view 场景
+ * @param {string} webmapId webmap的itmid
+ */
+async function switchBaseMapByWebmapId(view, webmapId) {
+  const [WebMap] = await jsapi.load(['esri/WebMap']);
+  const map = new WebMap({
+    portalItem: {
+      id: webmapId,
+    },
+  });
+  map.load().then(function () {
+    map.basemap.load().then(function () {
+      view.map.basemap = map.basemap;
+    });
+  });
+}
+export { switchBaseMapByWebmapId }
+//---------------------------------底图切换 start------------------------------
+
 //---------------------------------图层获取----------------------------------------
-
-
 /**
  * 根据图层的title获取图层
- * @author  lee  20181209
+ * @author  lee  
  * @param {object} view  场景
  * @param {string} title  图层名称
  */
@@ -17,7 +110,7 @@ function getLayerByTitle(view, title) {
 export { getLayerByTitle };
 /**
  * 根据图层的title获取图层
- * @author  lee  20181209
+ * @author  lee 
  * @param {object} view  场景
  * @param {string} id  图层id
  */
@@ -32,7 +125,7 @@ export { getLayerById };
 
 /**
  * 添加切片图层
- * @author  lee  20190313
+ * @author  lee  
  * @param {object} view  场景
  * @param {string} url  服务地址
  */
@@ -47,7 +140,7 @@ export { addTileLayer };
 
 /**
  * 添加影像图层
- * @author  lee  20190313
+ * @author  lee  
  * @param {object} view  场景
  * @param {string} url  服务地址
  */
@@ -62,9 +155,9 @@ async function addImageryLayer(view, url, title, extent) {
   view.map.add(layer);
   layer.when(function () {
     if (extent) {
-      ags.view.goTo(extent);
+      view.goTo(extent);
     } else {
-      ags.view.goTo(layer.fullExent);
+      view.goTo(layer.fullExent);
     }
   });
 
@@ -74,7 +167,7 @@ export { addImageryLayer };
 
 /**
  * 根据条件添加影像图层
- * @author  lee  20190313
+ * @author  lee  
  * @param {object} view  场景
  * @param {string} url  服务地址
  * @param {string} type  条件类型
@@ -96,44 +189,7 @@ async function addImageryLayerByCondition(view, url, type, value, title) {
 }
 export { addImageryLayerByCondition };
 
-/**
- * 初始化三维场景
- * @author  lee  20190313
- * @param {object} portal  portal地址
- * @param {string} itemid  webscenenId
- * @param {string} container  地图的div
- */
-async function initSceneView(portal, itemid, container, layer, lyr) {
-  const [WebScene, Sceneview] = await jsapi.load(['esri/WebScene', 'esri/views/SceneView']);
-  const scene = new WebScene({
-    portalItem: {
-      id: itemid,
-      portal: portal,
-    },
-  });
 
-  const view = new Sceneview({
-    container: container,
-    map: scene,
-    environment: {
-      atmosphere: {
-        // creates a realistic view of the atmosphere
-        quality: 'high',
-      },
-    },
-    ui: {
-      components: [], // 'zoom', 'navigation-toggle', 'compass'
-    },
-  });
-  if (layer) {
-    view.map.add(layer);
-  }
-
-  if (lyr) {
-    view.map.add(lyr);
-  }
-  return view;
-}
 
 /**
  * 根据幻灯片的名称，切换到对应的视角
@@ -296,6 +352,14 @@ async function drawbuffer(view, point, radius, radiusUnit) {
  * @param {string} point  中心点
  * @param {string} radius 半径 radiusUnit 单位
  * @param {string} radiusUnit 单位  三维场景里画圆形会出现变形
+ */
+/**
+ *
+ *
+ * @param {*} view
+ * @param {*} point
+ * @param {*} radius
+ * @param {*} radiusUnit
  */
 async function pointBuffer(view, point, radius, radiusUnit) {
   const [GraphicsLayer, Graphic, geometryEngine] = await jsapi.load([
@@ -612,7 +676,6 @@ export {
   highLightPolygonOutline,
   highlightByLayerGraphic,
   clearhightlight,
-  initSceneView,
   addfeatureLayer,
   gotoBySliderName,
   addBufferTextLayer,
