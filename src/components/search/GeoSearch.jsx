@@ -3,17 +3,18 @@ import PropTypes from 'prop-types';
 import { connect } from 'dva';
 import { Input, Button, Tooltip } from 'antd';
 
-import RouteComponents from './routes';
+import * as RouteComponents from './routes';
 
 // import CircuitTypeSelector from './CircuitTypeSelector';
-import TerminalSelector from './TerminalSelector';
-import RouteLocationSelector from './RouteLocationSelector';
-import BusLineResult from './BusLineResult';
-import DriveLineResult from './DriveLineResult';
-import RideLineResult from './RideLineResult';
-import WalkLineResult from './WalkLineResult';
-import BusyIndicator from './BusyIndicator';
-import ErrorIndicator from './ErrorIndicator';
+// import TerminalSelector from './TerminalSelector';
+// import RouteLocationSelector from './RouteLocationSelector';
+// import BusLineResult from './BusLineResult';
+// import DriveLineResult from './DriveLineResult';
+// import RideLineResult from './RideLineResult';
+// import WalkLineResult from './WalkLineResult';
+// import BusyIndicator from './BusyIndicator';
+// import ErrorIndicator from './ErrorIndicator';
+
 import SearchResultList from './SearchResultList';
 import SearchResultDetail from './SearchResultDetail';
 import Classquery from './ClassificationQuery';
@@ -190,7 +191,12 @@ class GeoSearch extends React.Component {
   }
 
   clearSearchResult() {
-    this.props.dispatch({ type: 'search/clearSearch' });
+    this.props.dispatch({
+      type: 'search/clearSearch',
+      payload: {
+        mode: SearchConsts.MODE_LOCATION,
+      },
+    });
   }
 
   closeNearbySearch() {
@@ -239,7 +245,10 @@ class GeoSearch extends React.Component {
   }
 
   handleDetailReturn() {
-    this.props.dispatch({ type: 'search/clearPoi' });
+    this.props.dispatch({
+      type: 'search/clearPoi',
+      payload: { subMode: '' },
+    });
   }
 
   handleNearbyDetailReturn() {
@@ -253,6 +262,7 @@ class GeoSearch extends React.Component {
 
   renderContent() {
     if (this.props.search.mode === SearchConsts.MODE_LOCATION) {
+      console.log(this.props.search.submode);
       switch (this.props.search.submode) {
         case SearchConsts.SUBMODE_LOCATION_NEARBY:
         case SearchConsts.SUBMODE_LOCATION_NEARBY_DETAIL:
@@ -305,7 +315,7 @@ class GeoSearch extends React.Component {
     }
 
     return (
-      <RouteComponents.CircuitTypeSelector
+      <RouteComponents.TypeSelector
         className={styles.dirselector}
         onChange={this.onDirectionModeChange}
       />
@@ -380,7 +390,10 @@ class GeoSearch extends React.Component {
   renderRouteBox() {
     if (this.props.search.mode === SearchConsts.MODE_DIRECTION) {
       return (
-        <TerminalSelector onStartInput={this.handleStartInput} onEndInput={this.handleEndInput} />
+        <RouteComponents.StartEndSelector
+          onStartInput={this.handleStartInput}
+          onEndInput={this.handleEndInput}
+        />
       );
     }
 
@@ -390,7 +403,7 @@ class GeoSearch extends React.Component {
   renderLocationOptSelector() {
     if (this.props.search.diropts) {
       return (
-        <RouteLocationSelector
+        <RouteComponents.RouteLSelector
           title={`${this.props.search.dirlttext} - ${this.props.search.diropttext}`}
           onSelect={this.handleOptSelect}
         />
@@ -402,7 +415,7 @@ class GeoSearch extends React.Component {
 
   renderBusyIndicator() {
     if (this.props.search.loading) {
-      return <BusyIndicator />;
+      return <RouteComponents.BusyTpl />;
     }
 
     return null;
@@ -412,19 +425,19 @@ class GeoSearch extends React.Component {
     if (this.props.search.mode === SearchConsts.MODE_DIRECTION) {
       if (this.props.search.dirmode === SearchConsts.MODE_DIR_BUS) {
         if (this.props.search.lines) {
-          return <BusLineResult />;
+          return <RouteComponents.BusLineList />;
         }
       } else if (this.props.search.dirmode === SearchConsts.MODE_DIR_DRIVE) {
         if (this.props.search.driveresult) {
-          return <DriveLineResult />;
+          return <RouteComponents.DriveLineList />;
         }
       } else if (this.props.search.dirmode === SearchConsts.MODE_DIR_WALK) {
         if (this.props.search.walkresult) {
-          return <WalkLineResult />;
+          return <RouteComponents.WalkLineList />;
         }
       } else if (this.props.search.dirmode === SearchConsts.MODE_DIR_RIDE) {
         if (this.props.search.rideresult) {
-          return <RideLineResult />;
+          return <RouteComponents.RideLineList />;
         }
       }
     }
@@ -491,7 +504,7 @@ class GeoSearch extends React.Component {
 
   renderErrorMsg() {
     if (this.props.search.hasError) {
-      return <ErrorIndicator msg={this.props.search.errMsg} />;
+      return <RouteComponents.ErrorTpl msg={this.props.search.errMsg} />;
     }
 
     return null;
